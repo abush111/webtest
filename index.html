@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Image Display with Fullscreen</title>
+  <style>
+    /* General body styling to center content and set background */
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh; /* Full viewport height */
+      margin: 0; /* Remove default margin */
+      background-color: #f0f0f0; /* Light grey background */
+      position: relative; /* Positioning context for absolute/fixed elements */
+    }
+
+    /* Container for the image, initially hidden */
+    #image-container {
+      display: none; /* Hidden by default */
+      margin: 20px; /* Margin around the container */
+      position: relative; /* Positioning context for child elements */
+    }
+
+    /* Styling for the displayed image */
+    #displayedImage {
+      max-width: 100%; /* Ensure the image doesn't exceed its container */
+      height: auto; /* Maintain aspect ratio */
+      cursor: pointer; /* Pointer cursor on hover */
+    }
+
+    /* Styling for the URL input field */
+    #urlInput {
+      margin-top: 10px; /* Space above the input */
+      padding: 10px; /* Padding inside the input */
+      width: 200px; /* Fixed width for the input */
+    }
+
+    /* Styling for the "Load Image" button */
+    #loadImageBtn {
+      margin-top: 10px; /* Space above the button */
+      padding: 10px 20px; /* Padding inside the button */
+      cursor: pointer; /* Pointer cursor on hover */
+    }
+
+    /* Styling for the "Plus" button in the bottom-right corner */
+    #plusButton {
+      position: fixed; /* Fixed position to stay in place */
+      bottom: 20px; /* Distance from the bottom */
+      right: 20px; /* Distance from the right */
+      padding: 10px 20px; /* Padding inside the button */
+      font-size: 20px; /* Larger font size */
+      cursor: pointer; /* Pointer cursor on hover */
+      background-color: #007bff; /* Blue background */
+      color: white; /* White text */
+      border: none; /* Remove default border */
+      border-radius: 5px; /* Slightly rounded corners */
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+      z-index: 1001; /* Ensure it appears above the dimmed background */
+    }
+
+    /* Styling for the context menu */
+    #context-menu {
+      position: fixed; /* Fixed position to stay in place */
+      bottom: 80px; /* Distance from the bottom */
+      right: 20px; /* Distance from the right */
+      background-color: white; /* White background */
+      border: 1px solid #ccc; /* Light grey border */
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+      display: none; /* Hidden by default */
+      z-index: 1002; /* Ensure it appears above the plus button */
+    }
+
+    /* Styling for buttons inside the context menu */
+    #context-menu button {
+      width: 100%; /* Full width of the menu */
+      border: none; /* Remove default border */
+      background: none; /* Remove default background */
+      padding: 10px; /* Padding inside the buttons */
+      cursor: pointer; /* Pointer cursor on hover */
+      text-align: left; /* Align text to the left */
+    }
+
+    /* Hover effect for context menu buttons */
+    #context-menu button:hover {
+      background-color: #f0f0f0; /* Light grey background on hover */
+    }
+
+    /* Styling for the dimmed background overlay */
+    #dimmedBackground {
+      display: none; /* Hidden by default */
+      position: fixed; /* Fixed position to cover the entire screen */
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+      z-index: 1000; /* Ensure it appears below the context menu and plus button */
+    }
+  </style>
+  <script>
+    /**
+     * Toggles fullscreen mode for the document.
+     * If the document is not in fullscreen, it requests fullscreen.
+     * If it is already in fullscreen, it exits fullscreen mode.
+     */
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen(); // Request fullscreen
+      } else {
+        document.exitFullscreen(); // Exit fullscreen
+      }
+    }
+
+    /**
+     * Loads an image from the URL entered in the input field.
+     * Displays the image container if the URL is valid.
+     */
+    function loadImage() {
+      const url = document.getElementById('urlInput').value; // Get the URL from the input
+      const imgContainer = document.getElementById('image-container'); // Image container
+      const img = document.getElementById('displayedImage'); // Image element
+
+      if (url) {
+        img.src = url; // Set the image source
+        imgContainer.style.display = 'block'; // Show the image container
+      } else {
+        alert('Please enter a valid URL'); // Show an alert if the URL is empty
+      }
+    }
+
+    /**
+     * Toggles the visibility of the context menu and dimmed background.
+     */
+    function toggleContextMenu() {
+      const contextMenu = document.getElementById('context-menu'); // Context menu
+      const dimmedBackground = document.getElementById('dimmedBackground'); // Dimmed background
+      const isVisible = contextMenu.style.display === 'block'; // Check if the menu is visible
+
+      contextMenu.style.display = isVisible ? 'none' : 'block'; // Toggle menu visibility
+      dimmedBackground.style.display = isVisible ? 'none' : 'block'; // Toggle dimmed background
+    }
+
+    /**
+     * Closes the context menu when clicking outside of it.
+     */
+    document.addEventListener('click', function(event) {
+      const contextMenu = document.getElementById('context-menu'); // Context menu
+      const plusButton = document.getElementById('plusButton'); // Plus button
+      const dimmedBackground = document.getElementById('dimmedBackground'); // Dimmed background
+
+      // If the click is outside the context menu and plus button, close the menu
+      if (event.target !== plusButton && !contextMenu.contains(event.target)) {
+        contextMenu.style.display = 'none'; // Hide the menu
+        dimmedBackground.style.display = 'none'; // Hide the dimmed background
+      }
+    });
+
+    /**
+     * Initialize event listeners when the DOM is fully loaded.
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load image when the "Load Image" button is clicked
+      document.getElementById('loadImageBtn').addEventListener('click', loadImage);
+
+      // Toggle fullscreen when the image is double-clicked
+      document.getElementById('displayedImage').addEventListener('dblclick', toggleFullscreen);
+
+      // Toggle context menu when the "Plus" button is clicked
+      document.getElementById('plusButton').addEventListener('click', toggleContextMenu);
+
+      // Enter fullscreen when the "Enter fullscreen" button is clicked
+      document.getElementById('enterFullscreenBtn').addEventListener('click', function() {
+        toggleFullscreen(); // Toggle fullscreen
+        toggleContextMenu(); // Close the context menu
+      });
+
+      // Exit fullscreen when the "Exit fullscreen" button is clicked
+      document.getElementById('exitFullscreenBtn').addEventListener('click', function() {
+        toggleFullscreen(); // Toggle fullscreen
+        toggleContextMenu(); // Close the context menu
+      });
+    });
+  </script>
+</head>
+
+<body>
+  <!-- Container for the displayed image -->
+  <div id="image-container">
+    <img id="displayedImage" src="" alt="Loaded Image" />
+  </div>
+
+  <!-- Input field for entering the image URL -->
+  <input type="text" id="urlInput" placeholder="Enter image URL" />
+
+  <!-- Button to load the image from the entered URL -->
+  <button id="loadImageBtn">Load Image</button>
+  
+  <!-- "Plus" button to open the context menu -->
+  <button id="plusButton">+</button>
+  
+  <!-- Context menu with fullscreen options -->
+  <div id="context-menu">
+    <button id="enterFullscreenBtn">Enter fullscreen</button>
+    <button id="exitFullscreenBtn">Exit fullscreen</button>
+  </div>
+
+  <!-- Dimmed background overlay when the context menu is open -->
+  <div id="dimmedBackground"></div>
+</body>
+</html>
